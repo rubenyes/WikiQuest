@@ -6,16 +6,31 @@ body {
 }
 .wikiVisionContainer > iframe {
 	margin: 0 auto;
-	
+	width: 100%;
 }
 .wikiVisionContainer > div {
 	margin: 0 auto;
-	width: 80%;
+	width: 70%;
 	height: 80vh;
+	float: right;
 }
 #wikiFrame{
 	overflow: auto;
 	height: 80vh;
+}
+#wikiTargetFrame {
+	overflow: auto;
+	height: 40vh;
+	float: left;
+	background-color: #FF8800;
+	width: 30%;
+}
+#content{
+	border-color: #A7D7F9;
+	background-color: #FFF;
+	color: #252525;
+	padding: 10px 20px;
+	margin-left: 10px;
 }
 a[href='#'] {
 	color: #FF8800;

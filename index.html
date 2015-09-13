@@ -18,9 +18,9 @@
 <body>
 <p>Wiki Vision</p>
 <div class="wikiVisionContainer">
+	<div id="wikiTargetFrame"></div>
 	<div>
 		<div id="wikiFrame">
-			
 		</div>
 		<!--iframe id="wikiFrame"src="URL" height="100%" width="100%" onload="wikiFrameLoaded()"></iframe--> 
 	</div>
@@ -36,7 +36,7 @@
 	var wikipediaHTMLResult = function(data) {
 		console.log(data);
 		var wikiFrame= document.getElementById('wikiFrame');
-		var readData = $('<div id="content" class="mw-body" role="main">' + data.parse.text['*'] + '</div>');
+		var readData = $('<div id="content" role="main">' + data.parse.text['*'] + '</div>');
 			// handle redirects
 		var redirect = readData.find('.redirectText a').text();
 		if(redirect != '') {
@@ -78,46 +78,15 @@
 		$(wikiFrame).append(readData);
 		//wikiFrame.appendChild(readData);
 	};
+	var wikipediaSummaryResult = function(data){
 
-	function callWikipediaAPI(wikipediaPage) {
-		// http://www.mediawiki.org/wiki/API:Parsing_wikitext#parse
-		$.getJSON('http://en.wikipedia.org/w/api.php?action=parse&format=json&callback=?', {page:wikipediaPage, prop:'text|images', uselang:'en'}, wikipediaHTMLResult);
 	}
-
-	function setWikiFrameURL(URL){
-		$.getJSON('http://whateverorigin.org/get?url=' + URL + '&callback=?', function(data){
-			var wikiFrame= document.getElementById('wikiFrame');
-			wikiFrame.innerHTML = '';
-			var tempContainer= document.createElement('div');
-			tempContainer.innerHTML = data.contents;
-			
-			
-			//slach unnecesary data
-			tempContainer=  $(tempContainer).find( '#content' )[0];
-			//patch a tags
-			$(tempContainer).find( 'a' ).each(function() {
-				var oldRef = $(this).attr('href');
-				var newRef=''; 
-				if(oldRef) {
-					if (oldRef[0]=='#') newRef = oldRef; 
-					else if (oldRef[0]=='/' && oldRef[1]=='w' && oldRef[2]!='/') 
-						newRef = 'javascript:setWikiFrameURL("https://en.wikipedia.org'+oldRef+'");';
-					else newRef='#';
-					$(this).attr('href', newRef);
-				}
-			});
-			//patch img
-			$(tempContainer).find( 'img' ).each(function() {
-				var oldSrc = $(this).attr('src');
-				var newSrc = 'https:'+oldSrc;
-				$(this).attr('src', newSrc);
-				$(this).attr('srcset', '');
-			});
-			//done patching
-			
-			wikiFrame.appendChild(tempContainer);
-
-		});
+	function callWikipediaAPI(wikipediaPage, summary) {
+		if(summary){
+			$.getJSON('http://en.wikipedia.org/w/api.php?action=parse&format=json&callback=?', {page:wikipediaPage, prop:'text|images', uselang:'en'}, wikipediaSummaryResult);
+			return;
+		}
+		$.getJSON('http://en.wikipedia.org/w/api.php?action=parse&format=json&callback=?', {page:wikipediaPage, prop:'text|images', uselang:'en'}, wikipediaHTMLResult);
 	}
 
 	function getRandomArticle (dest) {
@@ -139,6 +108,7 @@
 			
 		});
 	}
+
 	function setArticle(page , dest){
 		if(dest='start'){
 			startURL= page;
@@ -146,26 +116,12 @@
 		}
 		if(dest='end'){
 			targetURL= page;
+			callWikipediaAPI(targetURL,true);
 		}
 	}
-	function setArticleID(ID){
-		var startID=ID;
-		//startURL = 'https://en.wikipedia.org/wiki/?curid='+ startID;
-		startURL = 'https://en.wikipedia.org/wiki/?curid='+ startID;
-		setWikiFrameURL(startURL);
-	}
-	//https://en.wikipedia.org/wiki/Special:Random
-	//var startURL='https://en.wikipedia.org/wiki/James_Webb_House';
-	//en.wikipedia.org/?curid=19032740
-	//var startURL ='https://en.wikipedia.org/wiki/I_Could_Disappear';
-	//var targetURL='https://en.wikipedia.org/wiki/Gabriel_Lam';
-	//var wikiFrame= document.getElementById('wikiFrame');
-	//wikiFrame.src = startURL;
-	//setWikiFrameURL(startURL);
+	
 	getRandomArticle('start');
-	//console.log(startID);
-	//startURL = 'https://en.wikipedia.org/?curid='+ startID;
-	//console.log(startURL);
+
 
 </script>
 </body>
