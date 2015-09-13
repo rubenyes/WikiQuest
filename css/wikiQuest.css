@@ -1,0 +1,22 @@
+body {
+	background-color: #EFEFEF;
+}
+.wikiVisionContainer {
+
+}
+.wikiVisionContainer > iframe {
+	margin: 0 auto;
+	
+}
+.wikiVisionContainer > div {
+	margin: 0 auto;
+	width: 80%;
+	height: 80vh;
+}
+#wikiFrame{
+	overflow: auto;
+	height: 80vh;
+}
+a[href='#'] {
+	color: #FF8800;
+}

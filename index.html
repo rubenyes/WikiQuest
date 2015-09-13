@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8" />
+	<title>WikiQuest</title>
+	
+	<!--wiki stylesheets -->
+	<link rel="stylesheet" href="https://en.wikipedia.org/w/load.php?debug=false&amp;lang=en&amp;modules=ext.gadget.WatchlistBase%2CWatchlistGreenIndicators%7Cext.uls.nojs%7Cext.visualEditor.desktopArticleTarget.noscript%7Cmediawiki.legacy.shared%7Cmediawiki.sectionAnchor%7Cmediawiki.skinning.interface%7Cskins.vector.styles%7Cwikibase.client.init&amp;only=styles&amp;skin=vector" />
+	<link rel="stylesheet" href="https://en.wikipedia.org/w/load.php?debug=false&amp;lang=en&amp;modules=mediawiki.legacy.commonPrint&amp;only=styles&amp;skin=vector" media="print" />
+	<link rel="stylesheet" href="https://en.wikipedia.org/w/load.php?debug=false&amp;lang=en&amp;modules=site&amp;only=styles&amp;skin=vector" />
+	<style>a:lang(ar),a:lang(kk-arab),a:lang(mzn),a:lang(ps),a:lang(ur){text-decoration:none}</style>
+	<!--End wiki stylesheets -->
+
+	<link rel="stylesheet" type="text/css" href="css/wikiQuest.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+</head>
+
+<body>
+<p>Wiki Vision</p>
+<div class="wikiVisionContainer">
+	<div>
+		<div id="wikiFrame">
+			
+		</div>
+		<!--iframe id="wikiFrame"src="URL" height="100%" width="100%" onload="wikiFrameLoaded()"></iframe--> 
+	</div>
+	
+</div>
+<script type="text/javascript">
+	//variables
+	var startURL ='';
+	var targetURL='';
+	var historyURL = [];
+	//functions
+
+	var wikipediaHTMLResult = function(data) {
+		console.log(data);
+		var wikiFrame= document.getElementById('wikiFrame');
+		var readData = $('<div id="content" class="mw-body" role="main">' + data.parse.text['*'] + '</div>');
+			// handle redirects
+		var redirect = readData.find('.redirectText a').text();
+		if(redirect != '') {
+			callWikipediaAPI(redirect);
+		return;
+		}
+		//start handling*/
+		//patch a tags
+		$(readData).find( 'a' ).each(function() {
+			var oldRef = $(this).attr('href');
+			var newRef=''; 
+			if(oldRef) {
+				if (oldRef[0]=='#') newRef = oldRef; 
+				else if (oldRef[0]=='/' && oldRef[1]=='w' && oldRef[2]!='/') {
+					var index = oldRef.lastIndexOf('/');
+					var pageName= oldRef.substring(index+1);
+					newRef = 'javascript:callWikipediaAPI("'+pageName+'");';
+				}
+				else newRef='#';
+				$(this).attr('href', newRef);
+			}
+		});
+		//patch img
+		$(readData).find( 'img' ).each(function() {
+			var oldSrc = $(this).attr('src');
+			var newSrc = 'https:'+oldSrc;
+			$(this).attr('src', newSrc);
+			$(this).attr('srcset', '');
+		});
+		//done patching
+		wikiFrame.innerHTML='';
+		wikiFrame.scrollTop;
+		//<h1 id="firstHeading" class="firstHeading" lang="en">Trimerelysin II</h1>
+		var header = document.createElement('h1');
+		header.className ='firstHeading';
+		header.innerHTML = data.parse.title;
+		//wikiFrame.appendChild(header);
+		$(readData).prepend(header);
+		$(wikiFrame).append(readData);
+		//wikiFrame.appendChild(readData);
+	};
+
+	function callWikipediaAPI(wikipediaPage) {
+		// http://www.mediawiki.org/wiki/API:Parsing_wikitext#parse
+		$.getJSON('http://en.wikipedia.org/w/api.php?action=parse&format=json&callback=?', {page:wikipediaPage, prop:'text|images', uselang:'en'}, wikipediaHTMLResult);
+	}
+
+	function setWikiFrameURL(URL){
+		$.getJSON('http://whateverorigin.org/get?url=' + URL + '&callback=?', function(data){
+			var wikiFrame= document.getElementById('wikiFrame');
+			wikiFrame.innerHTML = '';
+			var tempContainer= document.createElement('div');
+			tempContainer.innerHTML = data.contents;
+			
+			
+			//slach unnecesary data
+			tempContainer=  $(tempContainer).find( '#content' )[0];
+			//patch a tags
+			$(tempContainer).find( 'a' ).each(function() {
+				var oldRef = $(this).attr('href');
+				var newRef=''; 
+				if(oldRef) {
+					if (oldRef[0]=='#') newRef = oldRef; 
+					else if (oldRef[0]=='/' && oldRef[1]=='w' && oldRef[2]!='/') 
+						newRef = 'javascript:setWikiFrameURL("https://en.wikipedia.org'+oldRef+'");';
+					else newRef='#';
+					$(this).attr('href', newRef);
+				}
+			});
+			//patch img
+			$(tempContainer).find( 'img' ).each(function() {
+				var oldSrc = $(this).attr('src');
+				var newSrc = 'https:'+oldSrc;
+				$(this).attr('src', newSrc);
+				$(this).attr('srcset', '');
+			});
+			//done patching
+			
+			wikiFrame.appendChild(tempContainer);
+
+		});
+	}
+
+	function getRandomArticle (dest) {
+		$.getJSON("http://en.wikipedia.org/w/api.php?action=query&generator=random&grnnamespace=0&prop=extracts&explaintext&exintro=&format=json&callback=?", function (data) {
+			var pid;
+			var ptitle;
+			for (var prop in data.query.pages) {
+				pid= prop;
+				$.getJSON('http://en.wikipedia.org/w/api.php?action=query&prop=info&pageids='+pid+'&inprop=url&format=json&callback=?', function(url) {
+					$.each(url.query.pages, function(key, page) {
+						ptitle = page.title; // the url to the page
+					});
+					//Sincrony here
+					setArticle(ptitle, dest);
+
+				});
+				break;
+			}
+			
+		});
+	}
+	function setArticle(page , dest){
+		if(dest='start'){
+			startURL= page;
+			callWikipediaAPI(startURL);
+		}
+		if(dest='end'){
+			targetURL= page;
+		}
+	}
+	function setArticleID(ID){
+		var startID=ID;
+		//startURL = 'https://en.wikipedia.org/wiki/?curid='+ startID;
+		startURL = 'https://en.wikipedia.org/wiki/?curid='+ startID;
+		setWikiFrameURL(startURL);
+	}
+	//https://en.wikipedia.org/wiki/Special:Random
+	//var startURL='https://en.wikipedia.org/wiki/James_Webb_House';
+	//en.wikipedia.org/?curid=19032740
+	//var startURL ='https://en.wikipedia.org/wiki/I_Could_Disappear';
+	//var targetURL='https://en.wikipedia.org/wiki/Gabriel_Lam';
+	//var wikiFrame= document.getElementById('wikiFrame');
+	//wikiFrame.src = startURL;
+	//setWikiFrameURL(startURL);
+	getRandomArticle('start');
+	//console.log(startID);
+	//startURL = 'https://en.wikipedia.org/?curid='+ startID;
+	//console.log(startURL);
+
+</script>
+</body>
+
+</html>
