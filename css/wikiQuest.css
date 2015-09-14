@@ -22,7 +22,6 @@ body {
 	overflow: auto;
 	height: 40vh;
 	float: left;
-	background-color: #FF8800;
 	width: 30%;
 }
 #content{
@@ -34,4 +33,11 @@ body {
 }
 a[href='#'] {
 	color: #FF8800;
+}
+#wikiTargetFrame a[href='#'] {
+	text-decoration: none;
+	color: inherit;
+}
+#wikiTargetFrame img{
+	float: left;
 }
