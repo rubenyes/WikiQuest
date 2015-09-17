@@ -41,8 +41,10 @@
 	var targetURL='';
 	var historyURL = [];
 	var currentURLIndex = 0;
+	var numberOfBacks = 0;
 	//functions
 	function pushURLHistory(pageName){
+
 		if (currentURLIndex > historyURL.length -1){
 			currentURLIndex++;
 			historyURL.push(pageName);
@@ -58,6 +60,7 @@
 	function getBackInHistory(pageName,index){
 		setCurrentURLIndex(index ); 
 		callWikipediaAPI(pageName);
+		numberOfBacks++;
 	}
 	function displayHistory(){
 		var historyList = document.getElementById('historyList');
@@ -65,7 +68,7 @@
 		for (var i = 0; i < currentURLIndex; i++) {
 		 	var item = document.createElement('li');
 		 	var link = document.createElement('a');
-			$(link).attr('href','javascript:getBackInHistory("'+historyURL[i]+'","'+i+'")');
+			$(link).attr('href','javascript:getBackInHistory("'+historyURL[i].replace(/"/g, '\\"')+'","'+i+'")');
 
 			link.innerHTML = historyURL[i];
 			item.appendChild(link);
@@ -91,8 +94,8 @@
 				if (oldRef[0]=='#') newRef = oldRef; 
 				else if (oldRef[0]=='/' && oldRef[1]=='w' && oldRef[2]!='/') {
 					var index = oldRef.lastIndexOf('/');
-					var pageName= oldRef.substring(index+1);
-					newRef = 'javascript:callWikipediaAPI("'+pageName+'");';
+					var pageName= decodeURIComponent(oldRef.substring(index+1));
+					newRef = 'javascript:callWikipediaAPI("'+pageName.replace(/"/g, '\\"')+'");';
 				}
 				else newRef='#';
 				$(this).attr('href', newRef);
