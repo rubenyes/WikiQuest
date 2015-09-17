@@ -2,34 +2,37 @@ body {
 	background-color: #EFEFEF;
 }
 .wikiVisionContainer {
-
 }
-.wikiVisionContainer > iframe {
-	margin: 0 auto;
-	width: 100%;
-}
-.wikiVisionContainer > div {
-	margin: 0 auto;
-	width: 70%;
+.leftSection{
 	height: 80vh;
-	float: right;
+	width: 27%;
+	float: left;
+	margin-left: 3%;
 }
+.rightSection{
+	margin: 0 auto;
+	width: 67%;
+	height: 80vh;
+	float: left;
+	margin-left: 3%;
+}
+
 #wikiFrame{
 	overflow: auto;
 	height: 80vh;
 }
-#wikiTargetFrame {
-	overflow: auto;
+#wikiTargetFrame{
 	height: 40vh;
-	float: left;
-	width: 30%;
+	overflow: auto;
+	background-color: #FFF;
 }
+/*Content fixes*/
+
 #content{
 	border-color: #A7D7F9;
 	background-color: #FFF;
 	color: #252525;
 	padding: 10px 20px;
-	margin-left: 10px;
 }
 a[href='#'] {
 	color: #FF8800;

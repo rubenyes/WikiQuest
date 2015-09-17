@@ -13,24 +13,66 @@
 
 	<link rel="stylesheet" type="text/css" href="css/wikiQuest.css">
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+	<script src='https://cdn.firebase.com/js/client/2.2.1/firebase.js'></script>
 </head>
 
 <body>
 <p>Wiki Vision</p>
 <div class="wikiVisionContainer">
-	<div id="wikiTargetFrame"></div>
-	<div>
-		<div id="wikiFrame"></div>
+	<div class ="leftSection">
+		<h3>Target</h3>
+		<div id="wikiTargetFrame"></div>
+		<div id="wikiHistoryFrame">
+			<ul id="historyList">
+				<h3>History</h3>
+				<li>lol</li>
+			</ul>
+		</div>
 	</div>
 	
+	<div class="rightSection">
+		<h3>Current Window</h3>
+		<div id="wikiFrame"></div>
+	</div>
 </div>
 <script type="text/javascript">
 	//variables
 	var startURL ='';
 	var targetURL='';
 	var historyURL = [];
+	var currentURLIndex = 0;
 	//functions
+	function pushURLHistory(pageName){
+		if (currentURLIndex > historyURL.length -1){
+			currentURLIndex++;
+			historyURL.push(pageName);
+		}
+		else {
+			historyURL[currentURLIndex++] = pageName;
+		}
+		displayHistory();
+	}
+	function setCurrentURLIndex(index){
+		currentURLIndex = index;
+	}
+	function getBackInHistory(pageName,index){
+		setCurrentURLIndex(index ); 
+		callWikipediaAPI(pageName);
+	}
+	function displayHistory(){
+		var historyList = document.getElementById('historyList');
+		historyList.innerHTML ='';
+		for (var i = 0; i < currentURLIndex; i++) {
+		 	var item = document.createElement('li');
+		 	var link = document.createElement('a');
+			$(link).attr('href','javascript:getBackInHistory("'+historyURL[i]+'","'+i+'")');
 
+			link.innerHTML = historyURL[i];
+			item.appendChild(link);
+			historyList.appendChild(item);
+		 }; 	
+		
+	}
 	var wikipediaHTMLResult = function(data) {
 		var wikiFrame= document.getElementById('wikiFrame');
 		var readData = $('<div id="content" role="main">' + data.parse.text['*'] + '</div>');
@@ -71,6 +113,10 @@
 		header.innerHTML = data.parse.title;
 		$(readData).prepend(header);
 		$(wikiFrame).append(readData);
+
+		//history handling
+		pushURLHistory(data.parse.title);
+
 	};
 
 	var wikipediaSummaryResult = function(data){
