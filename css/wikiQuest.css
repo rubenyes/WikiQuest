@@ -19,6 +19,7 @@ body {
 
 #wikiFrame{
 	overflow: auto;
+	background-color: #FFF;
 	height: 80vh;
 }
 #wikiTargetFrame{
@@ -42,5 +43,7 @@ a[href='#'] {
 	color: inherit;
 }
 #wikiTargetFrame img{
-	float: left;
+	float: right;
+	height: auto;
+	width: 40%;
 }

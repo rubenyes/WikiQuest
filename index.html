@@ -23,10 +23,8 @@
 		<h3>Target</h3>
 		<div id="wikiTargetFrame"></div>
 		<div id="wikiHistoryFrame">
-			<ul id="historyList">
-				<h3>History</h3>
-				<li>lol</li>
-			</ul>
+			<h3>History</h3>
+			<ul id="historyList"></ul>
 		</div>
 	</div>
 	
@@ -110,53 +108,48 @@
 		});
 		//done patching
 		wikiFrame.innerHTML='';
-		wikiFrame.scrollTop;
 		var header = document.createElement('h1');
 		header.className ='firstHeading';
 		header.innerHTML = data.parse.title;
 		$(readData).prepend(header);
 		$(wikiFrame).append(readData);
-
+		$('wikiFrame').scrollTop(0);
 		//history handling
 		pushURLHistory(data.parse.title);
 
 	};
 
 	var wikipediaSummaryResult = function(data){
-		var wikiTargetFrame= document.getElementById('wikiTargetFrame');
-		var readData = $('<div id="content" role="main">' + data.parse.text['*'] + '</div>');
-		// handle redirects
-		var redirect = readData.find('.redirectText a').text();
-		if(redirect != '') {
-			callWikipediaAPI(redirect,true);
-		return;
+		var pageData;
+		for( page in data.query.pages) {
+			pageData = data.query.pages[page];
 		}
-		//start handling*/
-		//use first paragraph
-		var summary= $(readData).find('p')[0];
-		$(summary).find('a').each(function() {
-			$(this).attr('href', '#');
-		});
-		var firstImage= $(readData).find('img')[0];
-		var oldSrc = $(firstImage).attr('src');
-		var newSrc = 'https:'+oldSrc;
-		$(firstImage).attr('src', newSrc);
-		$(firstImage).attr('srcset', '');
+		console.log(pageData);
+		var wikiTargetFrame= document.getElementById('wikiTargetFrame');
+		var summary= pageData.extract;
+		//check for first image
+		if(pageData.thumbnail){
+			var firstImage = document.createElement('img');
+			//https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Killian_memos_MSWord_animated.gif/50px-Killian_memos_MSWord_animated.gif
+			var oldSrc = pageData.thumbnail.source;
+			var newSrc = oldSrc.replace('/thumb/','/');
+			var lindex = newSrc.lastIndexOf('/');
+			$(firstImage).attr('src', newSrc.substring(0,lindex));
+		}	
 		var header = document.createElement('h1');
 		header.className ='firstHeading';
-		header.innerHTML = data.parse.title;
-		console.log(summary);
-		console.log(firstImage);
-		readData = $('<div id="content"></div>');;
+		header.innerHTML = pageData.title;
+		var readData = $('<div id="content"></div>');;
 		$(readData).append(header);
 		$(readData).append(firstImage);
 		$(readData).append(summary);
 		$(wikiTargetFrame).append(readData);
-		wikiTargetFrame.scrollTop;		
+		$('wikiTargetFrame').scrollTop(0);
 	};
 	function callWikipediaAPI(wikipediaPage, summary) {
 		if(summary){
-			$.getJSON('http://en.wikipedia.org/w/api.php?action=parse&format=json&callback=?', {page:wikipediaPage, prop:'text|images', uselang:'en'}, wikipediaSummaryResult);
+			//https://en.wikipedia.org/w/api.php?action=query&titles=English_Language&redirects&prop=extracts|pageimages&exintro
+			$.getJSON('http://en.wikipedia.org/w/api.php?action=query&format=json&exintro&callback=?', {titles:wikipediaPage, prop:'extracts|pageimages', uselang:'en'}, wikipediaSummaryResult);
 		}
 		else{
 			$.getJSON('http://en.wikipedia.org/w/api.php?action=parse&format=json&callback=?', {page:wikipediaPage, prop:'text|images', uselang:'en'}, wikipediaHTMLResult);
