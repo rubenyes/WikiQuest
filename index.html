@@ -113,7 +113,8 @@
 		header.innerHTML = data.parse.title;
 		$(readData).prepend(header);
 		$(wikiFrame).append(readData);
-		$('wikiFrame').scrollTop(0);
+		$(wikiFrame).scrollTop(0);
+		//$('#'+id)[0].scrollTop = $('#'+id)[0].scrollHeight;
 		//history handling
 		pushURLHistory(data.parse.title);
 
@@ -132,9 +133,9 @@
 			var firstImage = document.createElement('img');
 			//https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Killian_memos_MSWord_animated.gif/50px-Killian_memos_MSWord_animated.gif
 			var oldSrc = pageData.thumbnail.source;
-			var newSrc = oldSrc.replace('/thumb/','/');
-			var lindex = newSrc.lastIndexOf('/');
-			$(firstImage).attr('src', newSrc.substring(0,lindex));
+			var lindex = oldSrc.lastIndexOf('/');
+			var newSrc = oldSrc.substring(0,lindex);
+			$(firstImage).attr('src', newSrc + '/400px-'+pageData.pageimage);
 		}	
 		var header = document.createElement('h1');
 		header.className ='firstHeading';
@@ -144,7 +145,7 @@
 		$(readData).append(firstImage);
 		$(readData).append(summary);
 		$(wikiTargetFrame).append(readData);
-		$('wikiTargetFrame').scrollTop(0);
+		$(wikiTargetFrame).scrollTop(0);
 	};
 	function callWikipediaAPI(wikipediaPage, summary) {
 		if(summary){
