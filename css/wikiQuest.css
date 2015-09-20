@@ -27,6 +27,26 @@ body {
 	overflow: auto;
 	background-color: #FFF;
 }
+#wikiHistoryFrame{
+	height: 40vh;
+	overflow: auto;
+}
+#matchesList{
+	overflow: auto;
+	height: 75vh;
+	background-color: #FFF;
+}
+#tutorialFrame{
+	overflow: auto;
+	height: 40vh;
+	background-color: #FFF;
+}
+#infoFrame{
+	overflow: auto;
+	height: 26.6vh;
+	background-color: #FFF;
+}
+
 /*Content fixes*/
 
 #content{
@@ -46,4 +66,27 @@ a[href='#'] {
 	float: right;
 	height: auto;
 	width: 40%;
+}
+/*Style*/
+a.button.secondary {
+	background-color: #0095DD;
+}
+a.button.secondary:hover{
+	background-color: #0073BB;
+}
+a.button {
+	background-color: #FF8800;
+	text-decoration: none;
+	color: #FFF;
+	padding: 5px;
+	font-size: .75em;
+	border-radius: 3px;
+}
+a.button:hover {
+	background-color: #DD6600;
+	color: #DDD;
+}
+h3 span {
+	color: #0095DD;
+	font-size: .75em;
 }
