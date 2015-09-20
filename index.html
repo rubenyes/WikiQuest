@@ -20,7 +20,12 @@
 <div class="rightSection">
 	<h3> How to play</h3>
 	<div id="tutorialFrame">Under construction, click solo for now, sorry. :c</div>
-	<h3> Match Info <span class="info">username: <input type="text" id="nameInput"></span></h3>
+	<h3> Match Info 
+        <span class="info">username: 
+            <input type="text" id="nameInput">
+        </span>
+        <a class="button" id="startButton" href="javascript:startButton()">Start</a>
+    </h3>
 	<div id="infoFrame">
         <h4>Match Key:<span class="info" id="info-key"></span></h4>
         <h4>Match Creator:<span class="info" id="info-creator"></span></h4>
@@ -40,8 +45,20 @@
     var prevUsername;
     //main
     $( document ).ready(function() {
+        document.getElementById("startButton").style.visibility = "hidden";
         matchesRef.on('child_added', function(childSnapshot, prevChildKey) {
             displayMatches(childSnapshot);
+        });
+        matchesRef.on('child_removed', function(oldChildSnapshot){
+            var removed = document.getElementById(oldChildSnapshot.key());
+            if(removed){
+                $(removed).remove();
+                if(oldChildSnapshot.key()==currentMatchRef.key()){
+                   
+                    //TODO: handle ref change
+                    canceledMatch();
+                }
+            }
         });
     });
 
@@ -52,16 +69,33 @@
 		    started: false
 		  });
         changeRef(newMatchRef);
+        hosting = true;
+        document.getElementById("startButton").style.visibility = "visible";
     }
     function joinMatch(matchKey, username){
-    	//asign and display current joined match, USRNAME check
-        hosting = false;
+    	//asign and display current joined match, USRNAME check     
         changeRef(matchesRef.child(matchKey).ref());
         prevUsername=currentMatchRef.child('users').push(username);
+        
     }
-    function startMatch(matchKey, username){
+    function startMatch(){
     	//send to other URL and send the currentMatchKey
-    	window.location.href = 'game.html?match='+matchKey+'&username='+username;
+        currentMatchRef.child('started').set(true);
+    }
+    function canceledMatch(){
+        if(!hosting){ //only guests info needs adjusting
+            currentMatchRef.off();
+            currentMatchRef ='';
+            prevUsername='';
+            document.getElementById('info-key').innerHTML = '';
+            document.getElementById('info-creator').innerHTML = '';
+            document.getElementById('info-users').innerHTML = '';
+             alert('Host canceled match');
+        }
+        else{
+            hosting = false;
+             alert('You canceled the match');
+        }
     }
     //display functions
     function displayMatches(childSnapshot){
@@ -71,6 +105,7 @@
             var key = childSnapshot.key();
             var creator = childSnapshot.child('creator').val();
             var li = document.createElement('li');
+            li.id = key;
             var a = document.createElement('a');
             a.href = 'javascript:joinButton("'+key+'")';
             a.innerHTML = creator;
@@ -100,15 +135,37 @@
         //Check if match was set
         if(currentMatchRef){ //kill old listeners.
             currentMatchRef.off();
-            currentMatchRef.child('users').child(prevUsername.key()).remove();
+            if(hosting){ //remove match alltogether
+                currentMatchRef.remove();
+            }
+            else{
+                currentMatchRef.child('users').child(prevUsername.key()).remove();      
+            }
         }
         currentMatchRef = newRef;
+        hosting=false;
+        document.getElementById("startButton").style.visibility = "hidden";
         currentMatchRef.on('value',function(dataSnapshot){
             displayMatchInfo(dataSnapshot);
+            if(dataSnapshot.child('started').val()){
+                var username = $('#nameInput').val();
+                var key=currentMatchRef.key();
+                alert('Match Started');
+                window.location.href = 'game.html?match='+key+'&username='+username;
+            }
         });
 
     }
     //button & handlers
+    function startButton(){
+        var username = $('#nameInput').val();
+        if(username != ''){
+            startMatch();
+        }
+        else{
+            displayUsernameError();
+        }
+    }
     function createButton(){
     	var username = $('#nameInput').val();
     	if(username != ''){
