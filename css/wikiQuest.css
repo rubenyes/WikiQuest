@@ -1,5 +1,6 @@
 body {
 	background-color: #EFEFEF;
+	overflow: hidden;
 }
 .wikiVisionContainer {
 }
@@ -11,10 +12,11 @@ body {
 }
 .rightSection{
 	margin: 0 auto;
-	width: 67%;
+	width: 64%;
 	height: 80vh;
 	float: left;
 	margin-left: 3%;
+	margin-right: 3%;
 }
 
 #wikiFrame{
@@ -42,6 +44,7 @@ body {
 	background-color: #FFF;
 }
 #infoFrame{
+	padding: 10px;
 	overflow: auto;
 	height: 26.6vh;
 	background-color: #FFF;
@@ -86,7 +89,13 @@ a.button:hover {
 	background-color: #DD6600;
 	color: #DDD;
 }
-h3 span {
+span.info {
 	color: #0095DD;
 	font-size: .75em;
+}
+#matchesList li {
+	color: #0095DD;
+}
+#matchesList li a {
+	color: #0095DD;
 }

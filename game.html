@@ -17,7 +17,7 @@
 </head>
 
 <body>
-<p>Wiki Vision: FERREIROOOOO! QUE ONDA</p>
+<h1> WikiQuest <span class="info" id="userSpan"></span></h1>
 <div class="wikiVisionContainer">
 	<div class ="leftSection">
 		<h3>Target</h3>
@@ -204,6 +204,9 @@
 	$( document ).ready(function() {
 		userData = getUrlVars();
 		console.log(userData);
+		if(userData.username){
+			document.getElementById('userSpan').innerHTML=userData.username;
+		}
 	    getRandomArticle('start');
 	    getRandomArticle('end');
 	});
