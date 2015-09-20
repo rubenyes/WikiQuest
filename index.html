@@ -19,7 +19,10 @@
 </div>
 <div class="rightSection">
 	<h3> How to play</h3>
-	<div id="tutorialFrame">Under construction, click solo for now, sorry. :c</div>
+	<div id="tutorialFrame">
+        <p><strong>WikiQuest</strong> is a game of adventure trough the lands of knowledge. Once a game starts, you will have a <strong>target</strong>, the page you must reach, and will be given a starting page. Click the links on your <strong>current page</strong> and try to reach the target page. <strong>Orange links</strong> are external links and are not clickable, we are not ready to venture to the internet yet, better stay safe. You also have a <strong>history</strong> of all pages you visited on your quest, and can click them if you feel like going back. First one to get to their target wins.</p>   
+        <p>There are a few ways you can start a game. If you want to play alone (<em>recommended if you want to get a feel of the game</em>), simply click the <strong>[solo]</strong> button. If you feel like challenging someone, either pick any available match or create your own. Be sure to pick a username when creating or joining a match. If you are the creator of the match, you can decide when to start it by pressing the <strong>[start]</strong> button. Once pressed all players currently on the match, which are also displayed in match info, will be notified and the race begins. If otherwise you joined a match, you will also see current users in the match, but will have to wait until the creator decides to start.</p>
+    </div>
 	<h3> Match Info 
         <span class="info">username: 
             <input type="text" id="nameInput">
@@ -53,8 +56,6 @@
             if(removed){
                 $(removed).remove();
                 if(oldChildSnapshot.key()==currentMatchRef.key()){
-                   
-                    //TODO: handle ref change
                     canceledMatch();
                 }
             }

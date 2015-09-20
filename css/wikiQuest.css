@@ -39,8 +39,9 @@ body {
 }
 #tutorialFrame{
 	overflow: auto;
-	height: 40vh;
+	height: 35vh;
 	background-color: #FFF;
+	padding: 10px;
 }
 #infoFrame{
 	padding: 10px;
@@ -97,4 +98,7 @@ span.info {
 }
 #matchesList li a {
 	color: #0095DD;
+}
+#tutorialFrame p {
+	text-align: justify;
 }
