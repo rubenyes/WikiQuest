@@ -41,9 +41,20 @@
 	var currentURLIndex = 0;
 	var numberOfBacks = 0;
 	var userData;
+	var fireRef = new Firebase("https://glowing-torch-4056.firebaseio.com/WikiQuest");
+    var matchesRef = fireRef.child("matches");
+    var currentMatchRef;
 	//functions
 	function handleWin(){
-		alert("Victory");
+		if(currentMatchRef){
+			currentMatchRef.child('winner').set({ 
+				name: userData.username, 
+				backs: numberOfBacks,
+				start: startURL,
+				end: targetURL,
+				pages: historyURL 
+			});
+		}
 	}
 	function pushURLHistory(pageName){
 
@@ -206,6 +217,25 @@
 		console.log(userData);
 		if(userData.username){
 			document.getElementById('userSpan').innerHTML=userData.username;
+		}
+		if(userData.match && userData.match != 'solo'){
+			currentMatchRef = matchesRef.child(userData.match);
+			currentMatchRef.on('value',function(dataSnapshot){
+				if(dataSnapshot.hasChild('winner')){
+					var winName = dataSnapshot.child('winner').child('name').val();
+					var winBack = dataSnapshot.child('winner').child('backs').val();
+					var winStart = dataSnapshot.child('winner').child('start').val();
+					var winEnd = dataSnapshot.child('winner').child('end').val();
+					var winAlert = 'Winner: '+winName+'\n'+'Quest:'+winStart+' >> '
+						+winEnd+'\n'+'Returns: '+winBack+'\n\n'+'Path:\n';
+					dataSnapshot.child('winner').child('pages').forEach(function(childSnapshot) {
+						winAlert+=childSnapshot.key()+': ' + childSnapshot.val()+'\n'
+					});
+					alert(winAlert);
+					currentMatchRef.remove();
+					window.location.href = 'index.html';
+				}
+			});
 		}
 	    getRandomArticle('start');
 	    getRandomArticle('end');

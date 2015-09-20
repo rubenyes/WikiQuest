@@ -13,7 +13,7 @@
 <div class="leftSection">
 	<h3> Aviable matches 
 		<a class="button" href="javascript:createButton()">Create</a>
-		<a class="button secondary" href="javascript:startMatch('solo','loner')">Solo</a>
+		<a class="button secondary" href="javascript:startMatch(true)">Solo</a>
 	</h3>
 	<ul id="matchesList"></ul>
 </div>
@@ -39,7 +39,6 @@
     //variables
     var fireRef = new Firebase("https://glowing-torch-4056.firebaseio.com/WikiQuest");
     var matchesRef = fireRef.child("matches");
-    console.log(matchesRef);
     var currentMatchRef;
     var hosting; //my own match
     var prevUsername;
@@ -78,9 +77,14 @@
         prevUsername=currentMatchRef.child('users').push(username);
         
     }
-    function startMatch(){
+    function startMatch(solo){
     	//send to other URL and send the currentMatchKey
-        currentMatchRef.child('started').set(true);
+        if(solo){
+            window.location.href = 'game.html?match=solo&username=loner';
+        }
+        else{
+            currentMatchRef.child('started').set(true);
+        }
     }
     function canceledMatch(){
         if(!hosting){ //only guests info needs adjusting
