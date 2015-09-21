@@ -41,7 +41,7 @@
 	var currentURLIndex = 0;
 	var numberOfBacks = 0;
 	var userData;
-	var fireRef = new Firebase("https://glowing-torch-4056.firebaseio.com/WikiQuest");
+    var fireRef = new Firebase("https://wikiquest.firebaseio.com/");
     var matchesRef = fireRef.child("matches");
     var currentMatchRef;
 	//functions
@@ -220,6 +220,7 @@
 		userData = getUrlVars();
 		console.log(userData);
 		if(userData.username){
+			userData.username = decodeURIComponent(userData.username);
 			document.getElementById('userSpan').innerHTML=userData.username;
 		}
 		if(userData.match && userData.match != 'solo'){
