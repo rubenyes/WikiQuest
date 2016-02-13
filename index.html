@@ -11,7 +11,7 @@
 <body>
 <h1>WikiQuest</h1>
 <div class="leftSection">
-	<h3> Aviable matches 
+	<h3> Aviable matches
 		<a class="button" href="javascript:createButton()">Create</a>
 		<a class="button secondary" href="javascript:startMatch(true)">Solo</a>
 	</h3>
@@ -20,11 +20,11 @@
 <div class="rightSection">
 	<h3> How to play</h3>
 	<div id="tutorialFrame">
-        <p><strong>WikiQuest</strong> is a game of adventure trough the lands of knowledge. Once a game starts, you will have a <strong>target</strong>, the page you must reach, and will be given a starting page. Click the links on your <strong>current page</strong> and try to reach the target page. <strong>Orange links</strong> are external links and are not clickable, we are not ready to venture to the internet yet, better stay safe. You also have a <strong>history</strong> of all pages you visited on your quest, and can click them if you feel like going back. First one to get to their target wins.</p>   
+        <p><strong>WikiQuest</strong> is a game of adventure trough the lands of knowledge. Once a game starts, you will have a <strong>target</strong>, the page you must reach, and will be given a starting page. Click the links on your <strong>current page</strong> and try to reach the target page. <strong>Orange links</strong> are external links and are not clickable, we are not ready to venture to the internet yet, better stay safe. You also have a <strong>history</strong> of all pages you visited on your quest, and can click them if you feel like going back. First one to get to their target wins.</p>
         <p>There are a few ways you can start a game. If you want to play alone (<em>recommended if you want to get a feel of the game</em>), simply click the <strong>[solo]</strong> button. If you feel like challenging someone, either pick any available match or create your own. Be sure to pick a username when creating or joining a match. If you are the creator of the match, you can decide when to start it by pressing the <strong>[start]</strong> button. Once pressed all players currently on the match, which are also displayed in match info, will be notified and the race begins. If otherwise you joined a match, you will also see current users in the match, but will have to wait until the creator decides to start.</p>
     </div>
-	<h3> Match Info 
-        <span class="info">username: 
+	<h3> Match Info
+        <span class="info">username:
             <input type="text" id="nameInput">
         </span>
         <a class="button" id="startButton" href="javascript:startButton()">Start</a>
@@ -36,161 +36,7 @@
         <h4 id="info-users"></h4>
 	</div>
 </div>
-
-<script type="text/javascript">
-	//TODO move to another file
-    //variables
-    var fireRef = new Firebase("https://wikiquest.firebaseio.com/");
-    var matchesRef = fireRef.child("matches");
-    var currentMatchRef;
-    var hosting; //my own match
-    var prevUsername;
-    //main
-    $( document ).ready(function() {
-        document.getElementById("startButton").style.visibility = "hidden";
-        matchesRef.on('child_added', function(childSnapshot, prevChildKey) {
-            displayMatches(childSnapshot);
-        });
-        matchesRef.on('child_removed', function(oldChildSnapshot){
-            var removed = document.getElementById(oldChildSnapshot.key());
-            if(removed){
-                $(removed).remove();
-                if(oldChildSnapshot.key()==currentMatchRef.key()){
-                    canceledMatch();
-                }
-            }
-        });
-    });
-
-    //functions
-    function createMatch(username){
-    	var newMatchRef = matchesRef.push({
-		    creator: username,
-		    started: false
-		  });
-        changeRef(newMatchRef);
-        hosting = true;
-        document.getElementById("startButton").style.visibility = "visible";
-    }
-    function joinMatch(matchKey, username){
-    	//asign and display current joined match, USRNAME check     
-        changeRef(matchesRef.child(matchKey).ref());
-        prevUsername=currentMatchRef.child('users').push(username);
-        
-    }
-    function startMatch(solo){
-    	//send to other URL and send the currentMatchKey
-        if(solo){
-            window.location.href = 'game.html?match=solo&username=loner';
-        }
-        else{
-            currentMatchRef.child('started').set(true);
-        }
-    }
-    function canceledMatch(){
-        if(!hosting){ //only guests info needs adjusting
-            currentMatchRef.off();
-            currentMatchRef ='';
-            prevUsername='';
-            document.getElementById('info-key').innerHTML = '';
-            document.getElementById('info-creator').innerHTML = '';
-            document.getElementById('info-users').innerHTML = '';
-             alert('Host canceled match');
-        }
-        else{
-            hosting = false;
-             alert('You canceled the match');
-        }
-    }
-    //display functions
-    function displayMatches(childSnapshot){
-        var matchList = document.getElementById('matchesList');
-        //display on left side
-        if(!childSnapshot.child('started').val()){
-            var key = childSnapshot.key();
-            var creator = childSnapshot.child('creator').val();
-            var li = document.createElement('li');
-            li.id = key;
-            var a = document.createElement('a');
-            a.href = 'javascript:joinButton("'+key+'")';
-            a.innerHTML = creator;
-            li.appendChild(a);
-            matchList.appendChild(li);
-        }
-    }
-    function displayMatchInfo(matchSnapShot){
-    	//display current match info, creator, users in it etc
-        document.getElementById('info-key').innerHTML = matchSnapShot.key();
-        document.getElementById('info-creator').innerHTML = matchSnapShot.child('creator').val();
-        var ulist = document.getElementById('info-users');
-        ulist.innerHTML ='';
-        if(matchSnapShot.hasChild('users')){
-            matchSnapShot.child('users').forEach(function(childSnapshot) {
-                var span = document.createElement('span');
-                span.className = 'info';
-                span.innerHTML += childSnapshot.val()+', ';
-                ulist.appendChild(span);
-            });
-        }
-    }
-    function displayUsernameError(){
-    	alert('You need type a username');
-    }
-    function changeRef(newRef){
-        //Check if match was set
-        if(currentMatchRef){ //kill old listeners.
-            currentMatchRef.off();
-            if(hosting){ //remove match alltogether
-                currentMatchRef.remove();
-            }
-            else{
-                currentMatchRef.child('users').child(prevUsername.key()).remove();      
-            }
-        }
-        currentMatchRef = newRef;
-        hosting=false;
-        document.getElementById("startButton").style.visibility = "hidden";
-        currentMatchRef.on('value',function(dataSnapshot){
-            displayMatchInfo(dataSnapshot);
-            if(dataSnapshot.child('started').val()){
-                var username = $('#nameInput').val();
-                var key=currentMatchRef.key();
-                alert('Match Started');
-                window.location.href = 'game.html?match='+key+'&username='+username;
-            }
-        });
-
-    }
-    //button & handlers
-    function startButton(){
-        var username = $('#nameInput').val();
-        if(username != ''){
-            startMatch();
-        }
-        else{
-            displayUsernameError();
-        }
-    }
-    function createButton(){
-    	var username = $('#nameInput').val();
-    	if(username != ''){
-    		createMatch(username);
-    	}
-    	else{
-    		displayUsernameError();
-    	}
-    }
-    function joinButton(key){
-        var username = $('#nameInput').val();
-        if(username != ''){
-            joinMatch(key, username);
-        }
-        else{
-            displayUsernameError();
-        }
-    }
-    
-</script>
+<script src='js/index.js'></script>
 </body>
 
 </html>
