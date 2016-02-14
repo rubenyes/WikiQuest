@@ -24,7 +24,7 @@ function MatchMaking (connector, baseUrl){
   var listenForStart = function(){
     currentMatchConnector.onChange(function(match){
       if(match.started){
-        start(currentMatchKey);
+        start();
       }
     });
   };

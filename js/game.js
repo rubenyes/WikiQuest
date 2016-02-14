@@ -6,19 +6,20 @@
 	var currentURLIndex = 0;
 	var numberOfBacks = 0;
 	var userData;
-    var fireRef = new Firebase("https://wikiquest.firebaseio.com/");
-    var matchesRef = fireRef.child("matches");
-    var currentMatchRef;
+	var connector = new fbConnector('https://wikiquest.firebaseio.com/matches');
+	var currentMatchConnector;
 	//functions
 	function handleWin(){
-		if(currentMatchRef){
-			currentMatchRef.child('winner').set({
-				name: userData.username,
-				backs: numberOfBacks,
-				start: startURL,
-				end: targetURL,
-				pages: historyURL
-			});
+		if(currentMatchConnector){
+			currentMatchConnector.patch({
+				winner:{
+					name: userData.username,
+					backs: numberOfBacks,
+					start: startURL,
+					end: targetURL,
+					pages: historyURL
+			}
+		});
 		}
 		else{
 			alert("You won, but of course you were alone.")
@@ -61,6 +62,12 @@
 		 };
 
 	}
+	function isAnchor(ref){
+		return ref[0]=='#';
+	}
+	function isInnerLink(ref){
+		return ref[0]=='/' && ref[1]=='w' && ref[2]!='/'
+	}
 	var wikipediaHTMLResult = function(data) {
 		var wikiFrame= document.getElementById('wikiFrame');
 		var readData = $('<div id="content" role="main">' + data.parse.text['*'] + '</div>');
@@ -76,8 +83,8 @@
 			var oldRef = $(this).attr('href');
 			var newRef='';
 			if(oldRef) {
-				if (oldRef[0]=='#') newRef = oldRef;
-				else if (oldRef[0]=='/' && oldRef[1]=='w' && oldRef[2]!='/') {
+				if (isAnchor(oldRef)) newRef = oldRef;
+				else if (isInnerLink(oldRef)) {
 					var index = oldRef.lastIndexOf('/');
 					var pageName= decodeURIComponent(oldRef.substring(index+1));
 					newRef = 'javascript:callWikipediaAPI("'+pageName.replace(/"/g, '\\"')+'");';
@@ -135,32 +142,11 @@
 	};
 	function callWikipediaAPI(wikipediaPage, summary) {
 		if(summary){
-			//https://en.wikipedia.org/w/api.php?action=query&titles=English_Language&redirects&prop=extracts|pageimages&exintro
-			$.getJSON('http://en.wikipedia.org/w/api.php?action=query&format=json&exintro&callback=?', {titles:wikipediaPage, prop:'extracts|pageimages', uselang:'en'}, wikipediaSummaryResult);
+			wikiAPI.getExtract(wikipediaPage,wikipediaSummaryResult);
 		}
 		else{
-			$.getJSON('http://en.wikipedia.org/w/api.php?action=parse&format=json&callback=?', {page:wikipediaPage, prop:'text|images', uselang:'en'}, wikipediaHTMLResult);
+			wikiAPI.getPage(wikipediaPage, wikipediaHTMLResult);
 		}
-	}
-
-	function getRandomArticle (dest) {
-		$.getJSON("http://en.wikipedia.org/w/api.php?action=query&generator=random&grnnamespace=0&prop=extracts&explaintext&exintro=&format=json&callback=?", function (data) {
-			var pid;
-			var ptitle;
-			for (var prop in data.query.pages) {
-				pid= prop;
-				$.getJSON('http://en.wikipedia.org/w/api.php?action=query&prop=info&pageids='+pid+'&inprop=url&format=json&callback=?', function(url) {
-					$.each(url.query.pages, function(key, page) {
-						ptitle = page.title; // the url to the page
-					});
-					//Sincrony here
-					setArticle(ptitle, dest);
-
-				});
-				break;
-			}
-
-		});
 	}
 
 	function setArticle(page , dest){
@@ -189,24 +175,25 @@
 			document.getElementById('userSpan').innerHTML=userData.username;
 		}
 		if(userData.match && userData.match != 'solo'){
-			currentMatchRef = matchesRef.child(userData.match);
-			currentMatchRef.on('value',function(dataSnapshot){
-				if(dataSnapshot.hasChild('winner')){
-					var winName = dataSnapshot.child('winner').child('name').val();
-					var winBack = dataSnapshot.child('winner').child('backs').val();
-					var winStart = dataSnapshot.child('winner').child('start').val();
-					var winEnd = dataSnapshot.child('winner').child('end').val();
+			currentMatchConnector = new fbConnector('https://wikiquest.firebaseio.com/matches/' + userData.match);
+			currentMatchConnector.onChange(function(match){
+				if(match.winner){
+					var winName = match.winner.name;
+					var winBack = match.winner.backs;
+					var winStart = match.winner.start;
+					var winEnd = match.winner.end;
 					var winAlert = 'Winner: '+winName+'\n'+'Quest:'+winStart+' >> '
 						+winEnd+'\n'+'Returns: '+winBack+'\n\n'+'Path:\n';
-					dataSnapshot.child('winner').child('pages').forEach(function(childSnapshot) {
-						winAlert+=childSnapshot.key()+': ' + childSnapshot.val()+'\n'
+					Object.keys(match.winner.pages).forEach(function(page,index) {
+					    winAlert+= index+': ' + match.winner.pages[page]+'\n';
 					});
+
 					alert(winAlert);
-					currentMatchRef.remove();
+					currentMatchConnector.delete();
 					window.location.href = 'index.html';
 				}
 			});
 		}
-	    getRandomArticle('start');
-	    getRandomArticle('end');
+		wikiAPI.getRandomArticleName(function(page){setArticle(page,'start')});
+		wikiAPI.getRandomArticleName(function(page){setArticle(page,'end')});
 	});
