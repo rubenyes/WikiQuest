@@ -3,7 +3,7 @@ function fbConnector (url){
   var self = new BasicConnector();
   var baseUrl = url;
   var fireRef = new Firebase(url);
-
+  self.getURL = function () {return baseUrl};
   self.get = function (){
     var val= new Promise(function(resolve,reject){
         fireRef.once('value',function(data){
