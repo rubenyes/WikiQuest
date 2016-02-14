@@ -6,6 +6,7 @@ function MatchMaking (connector, baseUrl){
   var currentMatchKey;
   var hosting;
   var userKey;
+  var username;
   var matchCleanup = function (){
     if(currentMatchKey){
       currentMatchConnector.offChange();
@@ -20,62 +21,83 @@ function MatchMaking (connector, baseUrl){
       }
     }
   };
+  var listenForStart = function(){
+    currentMatchConnector.onChange(function(match){
+      if(match.started){
+        start(currentMatchKey);
+      }
+    });
+  };
   var canceledMatch = function(){
-    var event = new Event('match_canceled');
-    dispatchEvent(event);
+    var event;
     if(hosting){
       hosting = false;
+      event = new Event('match_canceled_by_me');
     }
     else{
+      event = new Event('match_canceled_by_host');
       currentMatchConnector.offChange();
       currentMatchConnector.offChildAdded();
       currentMatchKey = false;
       userKey = false;
     }
+    dispatchEvent(event);
   };
 //listeners for connection
 matchesConnector.onChildAdded(function (key, val){
-  var event = new CustomEvent('match_added', { 'match': val });
+  var event = new CustomEvent('match_added', { detail:{'match': val, 'key': key}});
   dispatchEvent(event);
 });
 matchesConnector.onChildRemoved (function (key, val){
-  var event = new CustomEvent('match_removed', { 'match': val });
+  var event = new CustomEvent('match_removed', { detail:{'match': val, 'key': key}});
   dispatchEvent(event);
   if(key == currentMatchKey) {
     canceledMatch();
   }
 });
 //end listeners
-  this.createMatch = function (username){
+  this.createMatch = function (newUsername){
     matchesConnector.post({
-      creator: username,
+      creator: newUsername,
       started: false
     }).then(function (matchKey){
       currentMatchKey = matchKey;
       currentMatchConnector = new connector(baseUrl + '/matches/'+matchKey);
       hosting = true;
-      var event = new CustomEvent('create_match', { 'key': matchKey });
-      dispatchEvent(event);
+      username =newUsername;
+      currentMatchConnector.get().then(function(val){
+        var event = new CustomEvent('create_match', { detail:{'match': val, 'key': currentMatchKey}});
+        dispatchEvent(event);
+      });
     });
   };
   this.joinMatch = function(matchKey, newUsername){
     matchCleanup();
     currentMatchKey = matchKey;
+    currentMatchConnector = new connector(baseUrl + '/matches/'+matchKey);
     hosting = false;
+    username =newUsername;
     var matchConnector = new connector(baseUrl + '/matches/'+matchKey+'/users');
     matchConnector.post(newUsername).then(function(key){
       userKey = key;
     });
-    var event = new CustomEvent('change_match', { 'key': matchKey });
-    dispatchEvent(event);
+    listenForStart();
+    currentMatchConnector.get().then(function(val){
+      var event = new CustomEvent('change_match', { detail:{'match': val, 'key': currentMatchKey}});
+      dispatchEvent(event);
+    });
   };
-  this.startMatch = function(matchKey){
+  function start(solo){
     var event;
-    var event = new CustomEvent('start_match', { 'key': matchKey });
-    if(matchKey != 'solo'){
-      var matchConnector = new connector(baseUrl + '/matches/'+matchKey);
+    if(!solo){
+      event = new CustomEvent('start_match', { detail:{'key': currentMatchKey, 'user': username}});
+      var matchConnector = new connector(baseUrl + '/matches/'+currentMatchKey);
       matchConnector.patch({started: true});
+    }
+    else{
+      event = new CustomEvent('start_match', { detail:{'key': 'solo', 'user': 'loner'}});
     }
     dispatchEvent(event);
   };
+  this.startMatch = start;
 }
