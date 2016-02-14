@@ -1,6 +1,6 @@
 //module for matchmaking
 //connector is a function reference to create a connector
-function Matchmaking (connector, baseUrl){
+function MatchMaking (connector, baseUrl){
   var matchesConnector = new connector(baseUrl + '/matches');
   var currentMatchConnector;
   var currentMatchKey;
@@ -20,7 +20,32 @@ function Matchmaking (connector, baseUrl){
       }
     }
   };
-
+  var canceledMatch = function(){
+    var event = new Event('match_canceled');
+    dispatchEvent(event);
+    if(hosting){
+      hosting = false;
+    }
+    else{
+      currentMatchConnector.offChange();
+      currentMatchConnector.offChildAdded();
+      currentMatchKey = false;
+      userKey = false;
+    }
+  };
+//listeners for connection
+matchesConnector.onChildAdded(function (key, val){
+  var event = new CustomEvent('match_added', { 'match': val });
+  dispatchEvent(event);
+});
+matchesConnector.onChildRemoved (function (key, val){
+  var event = new CustomEvent('match_removed', { 'match': val });
+  dispatchEvent(event);
+  if(key == currentMatchKey) {
+    canceledMatch();
+  }
+});
+//end listeners
   this.createMatch = function (username){
     matchesConnector.post({
       creator: username,

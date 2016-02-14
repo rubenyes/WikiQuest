@@ -75,5 +75,16 @@ function fbConnector (url){
   self.offChildAdded = function (){
     fireRef.off('child_added');
   };
+  self.onChildRemoved = function (callback){
+    fireRef.on('child_removed', function(dataSnapshot) {
+      var val = dataSnapshot.val();
+      var key = dataSnapshot.key();
+      callback(key, val);
+    });
+  };
+  self.offChildRemoved = function (){
+    fireRef.off('child_removed');
+  };
+
   return self;
 }

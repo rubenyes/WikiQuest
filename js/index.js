@@ -1,4 +1,5 @@
     //variables
+    var matchMaking = new MatchMaking(fbConnector, 'https://wikiquest.firebaseio.com');
     var fireRef = new Firebase("https://wikiquest.firebaseio.com/");
     var matchesRef = fireRef.child("matches");
     var currentMatchRef;

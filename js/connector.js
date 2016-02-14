@@ -27,4 +27,10 @@ function BasicConnector (){
   this.offChildAdded = function (){
     throw "offChildAdded not implmented";
   };
+  this.onChildRemoved = function (callback){
+    throw "onChildRemoved not implmented";
+  };
+  this.offChildRemoved = function (){
+    throw "offChildRemoved not implmented";
+  };
 }
